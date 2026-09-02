@@ -2,13 +2,16 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no">
     <title>婚礼桌位查询</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -16,6 +19,7 @@
             background: #faf7f2;
             color: #333;
             padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
         }
         .container {
             text-align: center;
@@ -25,6 +29,7 @@
         .heart {
             font-size: 48px;
             margin-bottom: 20px;
+            line-height: 1;
         }
         h1 {
             font-size: 24px;
@@ -68,7 +73,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="heart">💒</div>
+        <div class="heart">&#x1F492;</div>
         <h1>婚礼桌位查询</h1>
         <p class="subtitle">Wedding Table Finder</p>
         
@@ -84,7 +89,7 @@
             </p>
         </div>
         
-        <p class="footer">感谢您的到来，期待与您共庆美好时刻 ✨</p>
+        <p class="footer">感谢您的到来，期待与您共庆美好时刻 &#x2728;</p>
     </div>
 </body>
 </html>
