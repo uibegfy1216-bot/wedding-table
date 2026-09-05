@@ -3,93 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="format-detection" content="telephone=no">
     <title>婚礼桌位查询</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             background: #faf7f2;
             color: #333;
-            padding: 40px 20px;
             -webkit-font-smoothing: antialiased;
         }
-        .container {
+        .header {
             text-align: center;
+            padding: 40px 20px 20px;
+        }
+        .header .heart { font-size: 40px; margin-bottom: 10px; }
+        .header h1 { font-size: 22px; font-weight: 600; letter-spacing: 3px; color: #5a3e36; }
+        .header .subtitle { font-size: 13px; color: #999; margin-top: 6px; }
+
+        .search-box {
+            padding: 20px;
             max-width: 400px;
-            width: 100%;
+            margin: 0 auto;
         }
-        .heart {
-            font-size: 48px;
-            margin-bottom: 20px;
-            line-height: 1;
+        .search-input-wrap {
+            position: relative;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
         }
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            letter-spacing: 2px;
+        .search-input-wrap input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 14px 0;
+            background: transparent;
+            color: #333;
         }
-        .subtitle {
+        .search-input-wrap input::placeholder { color: #bbb; }
+        .search-btn {
+            background: #c48a6b;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 18px;
             font-size: 14px;
-            color: #888;
-            margin-bottom: 40px;
+            cursor: pointer;
+            margin-left: 8px;
         }
-        .card {
+
+        .results {
+            padding: 0 20px 40px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .result-card {
             background: #fff;
             border-radius: 16px;
-            padding: 32px 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            padding: 24px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            text-align: center;
         }
-        .notice {
-            font-size: 15px;
-            color: #666;
-            line-height: 1.8;
+        .result-card .name { font-size: 20px; font-weight: 600; color: #5a3e36; margin-bottom: 12px; }
+        .result-card .table-tag {
+            display: inline-block;
+            background: #c48a6b;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            padding: 10px 28px;
+            border-radius: 8px;
+            margin-bottom: 8px;
         }
-        .notice .highlight {
-            color: #c48a6b;
-            font-weight: 600;
-        }
-        .divider {
-            width: 40px;
-            height: 2px;
-            background: #e8ddd0;
-            margin: 24px auto;
-            border-radius: 1px;
-        }
-        .footer {
-            margin-top: 32px;
-            font-size: 12px;
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
             color: #bbb;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <div class="heart">&#x1F492;</div>
         <h1>婚礼桌位查询</h1>
-        <p class="subtitle">Wedding Table Finder</p>
-        
-        <div class="card">
-            <p class="notice">
-                亲爱的宾客，您好！<br><br>
-                <span class="highlight">桌位查询系统即将上线</span><br>
-                请婚礼当天扫码查询您的桌位
-            </p>
-            <div class="divider"></div>
-            <p class="notice" style="font-size: 13px; color: #999;">
-                如有疑问，请联系新人或现场工作人员
-            </p>
-        </div>
-        
-        <p class="footer">感谢您的到来，期待与您共庆美好时刻 &#x2728;</p>
+        <p class="subtitle">请输入您的姓名查询所在桌位</p>
     </div>
+
+    <div class="search-box">
+        <div class="search-input-wrap">
+            <input type="text" id="searchInput" placeholder="请输入姓名..." autocomplete="off">
+            <button class="search-btn" onclick="search()">查询</button>
+        </div>
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <script>
+        const guests = [
+  {"name": "谷淑英", "table": "1", "attribute": "双方亲属"},
+  {"name": "刘淑新", "table": "1", "attribute": "双方亲属"},
+  {"name": "苏元璋", "table": "1", "attribute": "双方亲属"},
+  {"name": "高海涛", "table": "1", "attribute": "双方亲属"},
+  {"name": "沈跃忠", "table": "1", "attribute": "双方亲属"},
+  {"name": "谷兰英", "table": "1", "attribute": "双方亲属"},
+  {"name": "谷淑欣", "table": "1", "attribute": "双方亲属"},
+  {"name": "柳静", "table": "1", "attribute": "双方亲属"},
+  {"name": "吴铭", "table": "1", "attribute": "双方亲属"},
+  {"name": "许桂娜", "table": "1", "attribute": "双方亲属"},
+  {"name": "林淑珍", "table": "1", "attribute": "双方亲属"},
+  {"name": "刘丽贞", "table": "1", "attribute": "双方亲属"},
+  {"name": "陈俏明", "table": "1", "attribute": "双方亲属"},
+  {"name": "郭泽和", "table": "1", "attribute": "双方亲属"},
+  {"name": "陆林华", "table": "2", "attribute": "新郎亲属"},
+  {"name": "高晨强", "table": "2", "attribute": "新郎亲属"},
+  {"name": "徐芬", "table": "2", "attribute": "新郎亲属"},
+  {"name": "高仰", "table": "2", "attribute": "新郎亲属"},
+  {"name": "高海英", "table": "2", "attribute": "新郎亲属"},
+  {"name": "朱伟杰", "table": "2", "attribute": "新郎亲属"},
+  {"name": "张琪琪", "table": "2", "attribute": "新郎亲属"},
+  {"name": "赵老师", "table": "2", "attribute": "新郎亲属"},
+  {"name": "暖暖", "table": "2", "attribute": "新郎亲属"},
+  {"name": "任娜", "table": "2", "attribute": "新郎亲属"},
+  {"name": "陈家煌", "table": "3", "attribute": "新娘亲属"},
+  {"name": "赵雨阳", "table": "3", "attribute": "新娘亲属"},
+  {"name": "刘少贞", "table": "3", "attribute": "新娘亲属"},
+  {"name": "刘东煜", "table": "3", "attribute": "新娘亲属"},
+  {"name": "刘寅生", "table": "3", "attribute": "新娘亲属"},
+  {"name": "林妙玲", "table": "3", "attribute": "新娘亲属"},
+  {"name": "林妙玲家属", "table": "3", "attribute": "新娘亲属"},
+  {"name": "吴晓娃", "table": "3", "attribute": "新娘亲属"},
+  {"name": "方艺闳", "table": "4", "attribute": "新郎同事"},
+  {"name": "李佳骏", "table": "4", "attribute": "新郎同事"},
+  {"name": "程铄淇", "table": "4", "attribute": "新郎同事"},
+  {"name": "李征洲", "table": "4", "attribute": "新郎同事"},
+  {"name": "牛子林", "table": "4", "attribute": "新郎同事"},
+  {"name": "宋尹强", "table": "4", "attribute": "新郎同事"},
+  {"name": "王赫", "table": "4", "attribute": "新郎同事"},
+  {"name": "乔奕玮", "table": "4", "attribute": "新郎同事"},
+  {"name": "赵元", "table": "4", "attribute": "新郎同事"},
+  {"name": "何绍文", "table": "4", "attribute": "新郎同事"},
+  {"name": "程睿", "table": "4", "attribute": "新郎同事"},
+  {"name": "程喆", "table": "5", "attribute": "新娘同事"},
+  {"name": "程喆家属", "table": "5", "attribute": "新娘同事"},
+  {"name": "林子渊", "table": "5", "attribute": "新娘同事"},
+  {"name": "林子渊家属", "table": "5", "attribute": "新娘同事"},
+  {"name": "张欣", "table": "5", "attribute": "新娘同事"},
+  {"name": "郑雪婷", "table": "5", "attribute": "新娘同事"},
+  {"name": "郑雪婷家属", "table": "5", "attribute": "新娘同事"},
+  {"name": "李泽鹏", "table": "5", "attribute": "新娘同事"},
+  {"name": "李泽鹏家属", "table": "5", "attribute": "新娘同事"},
+  {"name": "孙雪晖", "table": "6", "attribute": "新娘同事"},
+  {"name": "刘紫昀", "table": "6", "attribute": "新娘同事"},
+  {"name": "冯语涵", "table": "6", "attribute": "新娘同事"},
+  {"name": "王博灏", "table": "6", "attribute": "新娘同事"},
+  {"name": "沈倍", "table": "6", "attribute": "新娘同事"},
+  {"name": "韩汶倩", "table": "6", "attribute": "新娘同事"},
+  {"name": "曾伊梵", "table": "6", "attribute": "新娘同事"},
+  {"name": "孟荣", "table": "6", "attribute": "新娘同事"},
+  {"name": "赵铭昆", "table": "7", "attribute": "新郎朋友"},
+  {"name": "赵铭昆", "table": "7", "attribute": "新郎朋友"},
+  {"name": "李默涵", "table": "7", "attribute": "新郎朋友"},
+  {"name": "李默涵", "table": "7", "attribute": "新郎朋友"},
+  {"name": "李睿", "table": "7", "attribute": "新郎朋友"},
+  {"name": "李睿", "table": "7", "attribute": "新郎朋友"},
+  {"name": "郭宇轩", "table": "7", "attribute": "新郎朋友"},
+  {"name": "郭宇轩", "table": "7", "attribute": "新郎朋友"},
+  {"name": "杨翊盟", "table": "7", "attribute": "新郎朋友"},
+  {"name": "于泽盛", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "丁梅珊", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "郝厚邦", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "郝厚邦", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "张伯都", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "甘雨丰", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "赵文可", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "王乙杰", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "胡铭宇", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "李尹维玮", "table": "8", "attribute": "新郎/新娘大学同学"},
+  {"name": "罗梦嘉", "table": "9", "attribute": "新娘朋友"},
+  {"name": "陈涵", "table": "9", "attribute": "新娘朋友"},
+  {"name": "司梅", "table": "9", "attribute": "新娘朋友"},
+  {"name": "罗祺", "table": "9", "attribute": "新娘朋友"},
+  {"name": "毕冉超", "table": "9", "attribute": "新娘朋友"},
+  {"name": "毕冉超家属", "table": "9", "attribute": "新娘朋友"},
+  {"name": "李铭霖", "table": "9", "attribute": "新娘朋友"},
+  {"name": "陈帅", "table": "9", "attribute": "新娘朋友"},
+  {"name": "冯硕", "table": "9", "attribute": "新娘朋友"},
+  {"name": "蔡琪", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "徐子媛", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "蔡淑熙", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "蔡至钿", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "张煜坚", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "李沛熙", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "连泓杰", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "廖心悦", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "徐海容", "table": "10", "attribute": "新娘高中同学"},
+  {"name": "潘超", "table": "11", "attribute": "新郎朋友"},
+  {"name": "王韬", "table": "11", "attribute": "新郎朋友"},
+  {"name": "王韬", "table": "11", "attribute": "新郎朋友"},
+  {"name": "吴建翔", "table": "11", "attribute": "新郎朋友"},
+  {"name": "吴建翔", "table": "11", "attribute": "新郎朋友"},
+  {"name": "李少璋", "table": "11", "attribute": "新郎朋友"},
+  {"name": "陈鼎熙", "table": "11", "attribute": "新郎朋友"},
+  {"name": "刘云瀚", "table": "11", "attribute": "新郎朋友"},
+  {"name": "张加霂", "table": "11", "attribute": "新郎朋友"},
+  {"name": "王玉华", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "刘聪", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "郑思刚", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "谷静溪", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "王超", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "黄超", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "刘昊明", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "苏毅", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "刘洁", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "苏佳睿", "table": "V1包间-13", "attribute": "新郎亲属"},
+  {"name": "高维寅", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "张利明", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "吕福太", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "姜晋南", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "杨银刚", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "林刚", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "丁福焰", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "任万勇", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "冯跃华", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "王石山", "table": "V6包间-14", "attribute": "新郎父亲同学"},
+  {"name": "李越清", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "徐鸽", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "买丽花", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "郑胜利", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "祝小倩", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "徐芳", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "丁肇征", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "蔡立明", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "郝小平", "table": "V6包间-15", "attribute": "新郎父亲同学"},
+  {"name": "陈同良", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "李扬", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "王帅", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "杨建", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "吴耀辉", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "吴耀辉", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "刘长江", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "刘长江", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "朱劲东", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "魏东", "table": "V9包间-16", "attribute": "新郎同事"},
+  {"name": "纪男", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "万凯", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "王子岩", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "邵蓝锌", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "范泽锐", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "程建军", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "翟星宇", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "陈金璐", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "李浩源", "table": "V9包间-17", "attribute": "新郎领导"},
+  {"name": "李浩源", "table": "V9包间-17", "attribute": "新郎领导"}
+];
+
+        const input = document.getElementById('searchInput');
+        const results = document.getElementById('results');
+
+        input.addEventListener('input', () => {
+            const query = input.value.trim();
+            if (query.length >= 1) {
+                doSearch(query);
+            } else {
+                results.innerHTML = '';
+            }
+        });
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') search();
+        });
+
+        function search() {
+            const query = input.value.trim();
+            if (!query) return;
+            doSearch(query);
+        }
+
+        function doSearch(query) {
+            const q = query.toLowerCase();
+            const matched = guests.filter(g => g.name.toLowerCase().includes(q));
+
+            if (matched.length === 0) {
+                results.innerHTML = '<div class="empty-state">未找到该姓名，请检查输入是否正确</div>';
+                return;
+            }
+
+            results.innerHTML = matched.map(g => `
+                <div class="result-card">
+                    <div class="name">${g.name}</div>
+                    <div class="table-tag">${g.table}</div>
+                </div>
+            `).join('');
+        }
+    </script>
 </body>
 </html>
